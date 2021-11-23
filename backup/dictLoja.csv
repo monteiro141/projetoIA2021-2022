@@ -1,21 +1,21 @@
-id,zona,adultos,carrinhos,XESQ,XDIR,YCIMA,YBAIXO
-S7,Entrada,0,0,0,0,0,0
-C1_1,Nao sabe,0,0,0,0,0,0
-C2,Nao sabe,0,0,0,0,0,0
-C1_2,Nao sabe,0,0,0,0,0,0
-C3,Nao sabe,0,0,0,0,0,0
-S16,Nao sabe,0,0,0,0,0,0
-S15,Nao sabe,0,0,0,0,0,0
-C4_2,Nao sabe,0,0,0,0,0,0
-S8,Nao sabe,0,0,0,0,0,0
-C4_1,Nao sabe,0,0,0,0,0,0
-S9,Nao sabe,0,0,0,0,0,0
-C5_1,Nao sabe,0,0,0,0,0,0
-S14,Nao sabe,0,0,0,0,0,0
-C6_1,Nao sabe,0,0,0,0,0,0
-S13,Nao sabe,0,0,0,0,0,0
-C6_2,Nao sabe,0,0,0,0,0,0
-S12,Nao sabe,0,0,0,0,0,0
-S10,Nao sabe,0,0,0,0,0,0
-C5_2,Nao sabe,0,0,0,0,0,0
-S11,Nao sabe,0,0,0,0,0,0
+id,zona,adultos,carrinhos,XESQ,YCIMA,XDIR,YBAIXO
+S7,Entrada,0,0,30,30,135,140
+S8,Naosabe,0,0,180,30,285,140
+S9,Naosabe,0,0,330,30,435,140
+S10,Naosabe,0,0,480,30,585,140
+S11,Naosabe,0,0,630,30,770,140
+S12,Naosabe,0,0,630,465,770,570
+S13,Naosabe,0,0,480,465,585,570
+S14,Naosabe,0,0,330,465,435,570
+S15,Naosabe,0,0,180,465,285,570
+S16,Naosabe,0,0,30,465,135,570
+C1_1,Naosabe,0,0,30,165,135,305
+C1_2,Naosabe,0,0,30,330,135,435
+C2,Naosabe,0,0,160,165,285,285
+C3,Naosabe,0,0,160,330,285,435
+C4_1,Naosabe,0,0,315,165,435,305
+C4_2,Naosabe,0,0,310,330,435,435
+C5_1,Naosabe,0,0,460,165,605,285
+C5_2,Naosabe,0,0,610,165,770,285
+C6_1,Naosabe,0,0,460,330,605,435
+C6_2,Naosabe,0,0,610,330,770,435
