@@ -17,20 +17,54 @@ import csv
 '''
 Variaveis globais
 '''
-data = np.loadtxt('raparigas_rapazes.csv',delimiter=",",dtype=str,encoding="UTF-8")
+data = np.loadtxt('raparigas_rapazes_nosix.csv',delimiter=",",dtype=str,encoding="UTF-8")
 
 nomes = data[:,0]
 genero = data[:,1]
+nomesEncoded = np.array([])
 
-#nomes_float = [float(item) for item in nomes ]
+for dat in nomes:
+    valueNew = []
+    for i in range(0,len(dat)):
+        valueNew.append(max(0,ord(dat[i].lower())-96))
+    nomesEncoded = np.append(nomesEncoded, ''.join(map(str,valueNew)))
+'''
+AUMENTAR O ARRAY CONSOANTE O TAMANHO MÁXIMO DO MAIOR LOGO ASSIM TRABALHA-SE COM ARRAY nD
+Ex: nome = ['69','30','28',...,'1']
+'''
 
+def changeNameToNumber(name):
+    valueNew = []
+    arroz = np.array([])
+    for i in range(0,len(name)):
+        valueNew.append(max(0,ord(name[i].lower())-96))
+    arroz = np.append(arroz,''.join(map(str,valueNew)))
+    return arroz
+
+'''
 le  = preprocessing.LabelEncoder()
 nomes = le.fit_transform(nomes)
-#le  = le.fit(nomes, genero)
+le  = le.fit(nomes, genero)
 nomes = nomes.reshape(1,-1).T
-clf = tree.DecisionTreeClassifier().fit(nomes,genero)
-
-print(clf.predict(le.fit_transform(['Amália'])))
+print(nomesEncoded)
+for i in nomesEncoded:
+    for u in i:
+        if u.find('-') != -1:
+            print(u)
+'''
+nomesEncoded = nomesEncoded.reshape(1,-1).T
+clf = tree.DecisionTreeClassifier().fit(nomesEncoded,genero)
+print("Amália ",clf.predict([changeNameToNumber('Amália')]))
+print("Andreia ",clf.predict([changeNameToNumber('Andreia')]))
+print("Rita",clf.predict([changeNameToNumber('Rita')]))
+print("Rafaela",clf.predict([changeNameToNumber('Rafaela')]))
+print("Carlos ", clf.predict([changeNameToNumber('Carlos')]))
+print("Ricardo ", clf.predict([changeNameToNumber('Ricardo')]))
+print("Xavier ", clf.predict([changeNameToNumber('Xavier')]))
+print("Bruno", clf.predict([changeNameToNumber('Bruno')]))
+print("Alexandre",clf.predict([changeNameToNumber('Alexandre')]))
+print("Manuel ",clf.predict([changeNameToNumber('Manuel')]))
+print("Monty ",clf.predict([changeNameToNumber('Monty')]))
 
 G = nx.Graph()
 dictLoja = {}
