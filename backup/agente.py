@@ -5,13 +5,36 @@ criar aqui as funções que respondem às perguntas
 e quaisquer outras que achem necessário criar
 
 colocar aqui os nomes e número de aluno:
-NUM1, NOME1
-NUM2, NOME2
+43994, Bruno Monteiro
+44149, Alexandre Monteiro
 
 """
 import time
+import networkx as nx
 
+G = nx.Graph()
+dictLoja = {}
+"""
+Importar do csv para o grafo
+"""
+import csv
+with open('grafo.csv',newline="") as csvfile:
+    mapa = csv.reader(csvfile, delimiter=",", quotechar="|")
+    for trajeto in mapa:
+        G.add_edge(trajeto[0], trajeto[1], weight=int(trajeto[2]))
 
+with open("dictLoja.csv") as f:
+    csv_list = [[val.strip() for val in r.split(",")] for r in f.readlines()]
+
+(_, *header), *data = csv_list
+for row in data:
+    key, *values = row   
+    dictLoja[key] = {key: value for key, value in zip(header, values)}
+
+def printNodes():
+    print(dictLoja)
+    print(dictLoja['S7'])
+        
 def work(posicao, bateria, objetos):
     # esta função é invocada em cada ciclo de clock
     # e pode servir para armazenar informação recolhida pelo agente
@@ -25,7 +48,8 @@ def work(posicao, bateria, objetos):
     pass
 	
 def resp1():
-    pass
+    printNodes()
+    #pass
 
 def resp2():
     pass
