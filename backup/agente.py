@@ -1,74 +1,37 @@
-'''
+"""
 agente.py
 
 criar aqui as funções que respondem às perguntas
 e quaisquer outras que achem necessário criar
 
 colocar aqui os nomes e número de aluno:
-43994, Bruno Monteiro
-44149, Alexandre Monteiro
+43994, Bruno Miguel Gonçalves Monteiro
+44149, Alexandre Salcedas Monteiro
 
-'''
+"""
+
+#Import
 import time
-import networkx as nx
-from sklearn import tree,preprocessing
-import numpy as np
 import csv
-'''
-Variaveis globais
-'''
-data = np.loadtxt('raparigas_rapazes_treino.csv',delimiter=",",dtype=str,encoding="UTF-8")
-dataTest = np.loadtxt('raparigas_rapazes_teste.csv',delimiter=",",dtype=str,encoding="UTF-8")
-
-nomes = data[:,0]
-genero = data[:,1]
-nomesEncoded = np.array([])
-nomesEncodedTeste = np.array([])
-
-nomesTeste = dataTest[:,0]
-generoTeste = dataTest[:,1]
+import numpy as np
+import networkx as nx
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.feature_extraction import DictVectorizer
+from sklearn.tree import DecisionTreeClassifier
 
 
-def changeNameToNumber(name):
-    valueNew = []
-    arroz = np.array([])
-    for i in range(0,len(name)):
-        valueNew.append(max(0,ord(name[i].lower())-96))
-
-    while len(valueNew) != 30:
-        valueNew.insert(0,0)
-    arroz = np.append(arroz,''.join(map(str,valueNew)))
-    return arroz
-
-for nome in nomes:
-    nomesEncoded = np.append(nomesEncoded, ''.join(map(str,changeNameToNumber(nome))))
-
-for nomeTeste in nomesTeste:
-    nomesEncodedTeste = np.append(nomesEncodedTeste, ''.join(map(str,changeNameToNumber(nomeTeste))))
-
-nomesEncoded = nomesEncoded.reshape(1,-1).T
-clf = tree.DecisionTreeClassifier().fit(nomesEncoded,genero)
-nomesEncodedTeste = nomesEncodedTeste.reshape(1,-1).T
-
-generoTesteResultado = clf.predict(nomesEncodedTeste)
-
-p = (generoTesteResultado == generoTeste).mean()
-
-print("p: ",p)
-
-
-
-G = nx.Graph()
-dictLoja = {}
-
+#Global variables
 mulher=['null','null']
 posicao_anterior=[-1,-1]
 objeto_anterior = []
 
+G = nx.Graph()
+dictLoja = {}
 '''
 Importar do csv para o grafo
 '''
-
 with open('grafo.csv',newline="") as csvfile:
     mapa = csv.reader(csvfile, delimiter=",", quotechar="|")
     for trajeto in mapa:
@@ -83,14 +46,67 @@ for row in data:
     key, *values = row   
     dictLoja[key] = {key: value for key, value in zip(header, values)}
 
+'''
+Lê nomes de rapazes e raparigas para treinar
+'''
+data = np.loadtxt('raparigas_rapazes.csv',delimiter=",",dtype=str,encoding="UTF-8")
+nomes = data[:,0]
+genero = data[:,1]
 
 
-def printNodes():
-    print(dictLoja)
-    print(dictLoja['S7'])
-        
-def viewGender(objetos):
-    print(objetos)
+#features para os nomes
+def features(name):
+    name = name.lower()
+    return {
+        'first-letter': name[0], # First letter
+        'first2-letters': name[0:2], # First 2 letters
+        #'first3-letters': name[0:3], # First 3 letters
+        'last-letter': name[-1],
+        'last2-letters': name[-2:],
+        #'last3-letters': name[-3:],
+    }
+'''
+features = np.vectorize(features)
+nomes_feature = features(nomes)
+genero_feature = genero
+
+nomes_features_treino, nomes_features_teste, genero_treino, genero_teste = train_test_split(nomes_feature, genero_feature, test_size=0.33, random_state=42)
+
+treinadorNomes=DictVectorizer().fit_transform(nomes_features_treino)
+
+arvore_decisao=DecisionTreeClassifier()
+my_features=treinadorNomes.transform(nomes_features_treino)
+arvore_decisao.fit(my_features,genero_treino)
+
+'''
+
+features = np.vectorize(features)
+#print(features(["Paula", "Joaquim", "Miguel","Susana","Cláudia","Elsa"]))
+
+nomes_features = features(nomes)
+genero_features = genero
+
+nomes_features_treino, nomes_features_teste, genero_features_treino, genero_features_teste = train_test_split(nomes_features, genero_features, test_size=0.33, random_state=42)
+
+treinador_Nomes = DictVectorizer()
+treinador_Nomes.fit_transform(nomes_features_treino)
+
+
+ 
+arvore_Decisao = DecisionTreeClassifier()
+my_xfeatures =treinador_Nomes.transform(nomes_features_treino)
+arvore_Decisao.fit(my_xfeatures, genero_features_treino)
+
+def viewGender(objeto):
+    transform_Nomes=treinador_Nomes.transform(features([objeto]))
+    transform_Array = transform_Nomes.toarray()
+    previsao = arvore_Decisao.predict(transform_Array)
+    print("-----", objeto)
+    if int(previsao[0]) == 0:
+        mulher[0]=mulher[1]
+        mulher[1]=objeto
+    else:
+        print("HOMEM" ,objeto)
 
 def work(posicao, bateria, objetos):
     # esta função é invocada em cada ciclo de clock
@@ -99,6 +115,7 @@ def work(posicao, bateria, objetos):
     # posicao = a posição atual do agente, uma lista [X,Y]
     # bateria = valor de energia na bateria, um número inteiro >= 0
     # objetos = o nome do(s) objeto(s) próximos do agente, uma string
+
     # podem achar o tempo atual usando, p.ex.
     # time.time()
     #pass
@@ -112,61 +129,26 @@ def work(posicao, bateria, objetos):
         posicao_anterior[1]=posicao[1]
 	
 def resp1():
-    #Qual foi a penúltima pessoa do sexo feminino que viste?
-    printNodes()
-    #pass
-
-def resp2():
-    #Em que tipo de zona estás agora?
     pass
 
+def resp2():
+    viewGender("Ana")
+    print(mulher)
+
 def resp3():
-    #Qual o caminho para a papelaria?
     pass
 
 def resp4():
-    #Qual a distância até ao talho?
     pass
 
 def resp5():
-    #Quanto tempo achas que demoras a ir de onde estás até à caixa?
     pass
 
 def resp6():
-    #Quanto tempo achas que falta até ficares com metade da bateria que tens agora?
     pass
 
 def resp7():
-    #Qual é a probabilidade da próxima pessoa a encontrares ser uma criança?
     pass
 
 def resp8():
-    #Qual é a probabilidade de encontrar um adulto numa zona se estiver lá uma criança mas não estiver lá um carrinho?
-
     pass
-
-'''
-AUMENTAR O ARRAY CONSOANTE O TAMANHO MÁXIMO DO MAIOR LOGO ASSIM TRABALHA-SE COM ARRAY nD
-Ex: nome = ['69','30','28',...,'1']
-le  = preprocessing.LabelEncoder()
-nomes = le.fit_transform(nomes)
-le  = le.fit(nomes, genero)
-nomes = nomes.reshape(1,-1).T
-print(nomesEncoded)
-for i in nomesEncoded:
-    for u in i:
-        if u.find('-') != -1:
-            print(u)
-
-print("Amália ",clf.predict([changeNameToNumber('Amália')]))
-print("Andreia ",clf.predict([changeNameToNumber('Andreia')]))
-print("Rita",clf.predict([changeNameToNumber('Rita')]))
-print("Rafaela",clf.predict([changeNameToNumber('Rafaela')]))
-print("Carlos ", clf.predict([changeNameToNumber('Carlos')]))
-print("Ricardo ", clf.predict([changeNameToNumber('Ricardo')]))
-print("Xavier ", clf.predict([changeNameToNumber('Xavier')]))
-print("Bruno", clf.predict([changeNameToNumber('Bruno')]))
-print("Alexandre",clf.predict([changeNameToNumber('Alexandre')]))
-print(changeNameToNumber('Manuel')[0])
-print("Manuel ",clf.predict([changeNameToNumber('Manuel')]))
-'''
