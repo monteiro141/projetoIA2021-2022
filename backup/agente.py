@@ -36,7 +36,7 @@ Importar do csv para o grafo
 with open('grafo.csv',newline="") as csvfile:
     mapa = csv.reader(csvfile, delimiter=",", quotechar="|")
     for trajeto in mapa:
-        G.add_edge(trajeto[0], trajeto[1], weight=int(trajeto[2]))
+        G.add_edge(trajeto[0], trajeto[1], weight=float(trajeto[2]))
 '''
 Dicionario com zonas e corredores
 '''
@@ -127,7 +127,13 @@ def work(posicao, bateria, objetos):
             objeto_anterior.append(i)
         posicao_anterior[0]=posicao[0]
         posicao_anterior[1]=posicao[1]
-	
+
+def calcularDistancia2Pontos(ponto1, ponto2):
+    pontoMedio=[]
+    pontoMedio.append((int(dictLoja[ponto2]['XESQ']) + int(dictLoja[ponto2]['XDIR'])) /2)
+    pontoMedio.append((int(dictLoja[ponto2]['YCIMA']) + int(dictLoja[ponto2]['YBAIXO'])) /2)
+    distancia= ((pontoMedio[0]-ponto1[0])**2 + (pontoMedio[1]-ponto1[1])**2)**0.5
+    return distancia
 def resp1():
     #Qual foi a penúltima pessoa do sexo feminino que viste?
     if mulher[0] == 'null':
@@ -143,11 +149,54 @@ def resp2():
 
 def resp3():
     #Qual o caminho para a papelaria?
-    pass
+    #verificar se existe papelaria
+    conhece=False
+    
+    for i in dictLoja:    
+        if dictLoja[i]['zona'] == 'papelaria':
+            papelaria=i
+            conhece=True
+            break
+    if conhece:
+        caminho=nx.astar_path(G,viewZone(posicao_atual), papelaria)
+        caminhoFinal=[]
+        for i in caminho:
+            if '_' in i:
+                auxiliar=i.split('_')[0]
+                if auxiliar not in caminhoFinal:
+                    caminhoFinal.append(auxiliar)
+            else:
+                caminhoFinal.append(i)
+        print(caminhoFinal)
+    else:
+        print("Não sabe onde é o papelaria.")
+        
+        
+    
 
 def resp4():
     #Qual a distância até ao talho?
-    pass
+    conhece=False
+    for i in dictLoja:    
+        if dictLoja[i]['zona'] == 'talho':
+            talho=i
+            conhece=True
+            break
+    if conhece:
+        gnext=G
+        zona_atual=viewZone(posicao_atual)
+        ligacoes_zona=gnext.edges([zona_atual])
+
+        for i in ligacoes_zona:
+            gnext.add_edge('P_A', i[1], weight=calcularDistancia2Pontos(posicao_atual,i[1]))
+        
+        caminho=nx.astar_path(gnext,'P_A', talho)
+        distancia=0
+        for i in range(0, (len(caminho)-1)):
+            distancia+=gnext.get_edge_data(caminho[i], caminho[i+1])["weight"]
+        print("Distância da posição atual ao talho é",round(distancia,2))
+    else:
+        print("Não sabe onde é o talho.")
 
 def resp5():
     #Quanto tempo achas que demoras a ir de onde estás até à caixa?
