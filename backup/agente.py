@@ -26,6 +26,7 @@ from sklearn.tree import DecisionTreeClassifier
 mulher=['null','null']
 posicao_anterior=[-1,-1]
 objeto_anterior = []
+posicao_atual=[-1,-1]
 
 G = nx.Graph()
 dictLoja = {}
@@ -65,20 +66,6 @@ def features(name):
         'last2-letters': name[-2:],
         #'last3-letters': name[-3:],
     }
-'''
-features = np.vectorize(features)
-nomes_feature = features(nomes)
-genero_feature = genero
-
-nomes_features_treino, nomes_features_teste, genero_treino, genero_teste = train_test_split(nomes_feature, genero_feature, test_size=0.33, random_state=42)
-
-treinadorNomes=DictVectorizer().fit_transform(nomes_features_treino)
-
-arvore_decisao=DecisionTreeClassifier()
-my_features=treinadorNomes.transform(nomes_features_treino)
-arvore_decisao.fit(my_features,genero_treino)
-
-'''
 
 features = np.vectorize(features)
 #print(features(["Paula", "Joaquim", "Miguel","Susana","Cláudia","Elsa"]))
@@ -97,17 +84,26 @@ arvore_Decisao = DecisionTreeClassifier()
 my_xfeatures =treinador_Nomes.transform(nomes_features_treino)
 arvore_Decisao.fit(my_xfeatures, genero_features_treino)
 
+'''
+Verifica o género das pessoas que o robô passa
+'''
 def viewGender(objeto):
     transform_Nomes=treinador_Nomes.transform(features([objeto]))
     transform_Array = transform_Nomes.toarray()
     previsao = arvore_Decisao.predict(transform_Array)
-    print("-----", objeto)
     if int(previsao[0]) == 0:
         mulher[0]=mulher[1]
         mulher[1]=objeto
-    else:
-        print("HOMEM" ,objeto)
 
+def checkZone(zona, pos):
+    for i in dictLoja:
+       if int(dictLoja[i]['XDIR']) >= pos[0] >= int(dictLoja[i]['XESQ']) and int(dictLoja[i]['YCIMA']) <= pos[1] <= int(dictLoja[i]['YBAIXO']):
+           dictLoja[i]['zona'] = zona
+
+def viewZone(pos):
+    for i in dictLoja:
+       if int(dictLoja[i]['XDIR']) >= pos[0] >= int(dictLoja[i]['XESQ']) and int(dictLoja[i]['YCIMA']) <= pos[1] <= int(dictLoja[i]['YBAIXO']):
+           return i
 def work(posicao, bateria, objetos):
     # esta função é invocada em cada ciclo de clock
     # e pode servir para armazenar informação recolhida pelo agente
@@ -119,36 +115,53 @@ def work(posicao, bateria, objetos):
     # podem achar o tempo atual usando, p.ex.
     # time.time()
     #pass
+    posicao_atual[0]=posicao[0]
+    posicao_atual[1]=posicao[1]
     if posicao_anterior!=posicao and objeto_anterior!=objetos:
         objeto_anterior.clear()
         for i in objetos:
             if 'adulto' in i or 'criança' in i or 'funcionário' in i:        
                 viewGender(i.split('_')[1])
+            if 'zona' in i:
+                checkZone(i.split('_')[1], posicao)
             objeto_anterior.append(i)
         posicao_anterior[0]=posicao[0]
         posicao_anterior[1]=posicao[1]
 	
 def resp1():
+    #Qual foi a penúltima pessoa do sexo feminino que viste?
+    if mulher[0] == 'null':
+        print("O robô ainda não passou pelo menos por duas mulheres, logo não existe penúltima pessoa do sexo feminino")
+    else:
+        print("Penúltima pessoa do sexo feminino vista foi a", mulher[0])
     pass
 
 def resp2():
-    viewGender("Ana")
-    print(mulher)
+    #Em que tipo de zona estás agora?
+    print(dictLoja[viewZone(posicao_atual)]['zona'])
+    
 
 def resp3():
+    #Qual o caminho para a papelaria?
     pass
 
 def resp4():
+    #Qual a distância até ao talho?
     pass
 
 def resp5():
+    #Quanto tempo achas que demoras a ir de onde estás até à caixa?
     pass
 
 def resp6():
+    #Quanto tempo achas que falta até ficares com metade da bateria que tens agora?
     pass
 
 def resp7():
+    #Qual é a probabilidade da próxima pessoa a encontrares ser uma criança?
     pass
 
 def resp8():
+    #Qual é a probabilidade de encontrar um adulto numa zona se estiver lá uma criança mas não estiver lá um carrinho?
+
     pass
