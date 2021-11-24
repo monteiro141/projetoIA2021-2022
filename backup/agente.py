@@ -17,54 +17,46 @@ import csv
 '''
 Variaveis globais
 '''
-data = np.loadtxt('raparigas_rapazes_nosix.csv',delimiter=",",dtype=str,encoding="UTF-8")
+data = np.loadtxt('raparigas_rapazes_treino.csv',delimiter=",",dtype=str,encoding="UTF-8")
+dataTest = np.loadtxt('raparigas_rapazes_teste.csv',delimiter=",",dtype=str,encoding="UTF-8")
 
 nomes = data[:,0]
 genero = data[:,1]
 nomesEncoded = np.array([])
+nomesEncodedTeste = np.array([])
 
-for dat in nomes:
-    valueNew = []
-    for i in range(0,len(dat)):
-        valueNew.append(max(0,ord(dat[i].lower())-96))
-    nomesEncoded = np.append(nomesEncoded, ''.join(map(str,valueNew)))
-'''
-AUMENTAR O ARRAY CONSOANTE O TAMANHO MÁXIMO DO MAIOR LOGO ASSIM TRABALHA-SE COM ARRAY nD
-Ex: nome = ['69','30','28',...,'1']
-'''
+nomesTeste = dataTest[:,0]
+generoTeste = dataTest[:,1]
+
 
 def changeNameToNumber(name):
     valueNew = []
     arroz = np.array([])
     for i in range(0,len(name)):
         valueNew.append(max(0,ord(name[i].lower())-96))
+
+    while len(valueNew) != 30:
+        valueNew.insert(0,0)
     arroz = np.append(arroz,''.join(map(str,valueNew)))
     return arroz
 
-'''
-le  = preprocessing.LabelEncoder()
-nomes = le.fit_transform(nomes)
-le  = le.fit(nomes, genero)
-nomes = nomes.reshape(1,-1).T
-print(nomesEncoded)
-for i in nomesEncoded:
-    for u in i:
-        if u.find('-') != -1:
-            print(u)
-'''
+for nome in nomes:
+    nomesEncoded = np.append(nomesEncoded, ''.join(map(str,changeNameToNumber(nome))))
+
+for nomeTeste in nomesTeste:
+    nomesEncodedTeste = np.append(nomesEncodedTeste, ''.join(map(str,changeNameToNumber(nomeTeste))))
+
 nomesEncoded = nomesEncoded.reshape(1,-1).T
 clf = tree.DecisionTreeClassifier().fit(nomesEncoded,genero)
-print("Amália ",clf.predict([changeNameToNumber('Amália')]))
-print("Andreia ",clf.predict([changeNameToNumber('Andreia')]))
-print("Rita",clf.predict([changeNameToNumber('Rita')]))
-print("Rafaela",clf.predict([changeNameToNumber('Rafaela')]))
-print("Carlos ", clf.predict([changeNameToNumber('Carlos')]))
-print("Ricardo ", clf.predict([changeNameToNumber('Ricardo')]))
-print("Xavier ", clf.predict([changeNameToNumber('Xavier')]))
-print("Bruno", clf.predict([changeNameToNumber('Bruno')]))
-print("Alexandre",clf.predict([changeNameToNumber('Alexandre')]))
-print("Manuel ",clf.predict([changeNameToNumber('Manuel')]))
-print("Monty ",clf.predict([changeNameToNumber('Monty')]))
+nomesEncodedTeste = nomesEncodedTeste.reshape(1,-1).T
+
+generoTesteResultado = clf.predict(nomesEncodedTeste)
+
+p = (generoTesteResultado == generoTeste).mean()
+
+print("p: ",p)
+
+
 
 G = nx.Graph()
 dictLoja = {}
@@ -153,3 +145,28 @@ def resp8():
 
     pass
 
+'''
+AUMENTAR O ARRAY CONSOANTE O TAMANHO MÁXIMO DO MAIOR LOGO ASSIM TRABALHA-SE COM ARRAY nD
+Ex: nome = ['69','30','28',...,'1']
+le  = preprocessing.LabelEncoder()
+nomes = le.fit_transform(nomes)
+le  = le.fit(nomes, genero)
+nomes = nomes.reshape(1,-1).T
+print(nomesEncoded)
+for i in nomesEncoded:
+    for u in i:
+        if u.find('-') != -1:
+            print(u)
+
+print("Amália ",clf.predict([changeNameToNumber('Amália')]))
+print("Andreia ",clf.predict([changeNameToNumber('Andreia')]))
+print("Rita",clf.predict([changeNameToNumber('Rita')]))
+print("Rafaela",clf.predict([changeNameToNumber('Rafaela')]))
+print("Carlos ", clf.predict([changeNameToNumber('Carlos')]))
+print("Ricardo ", clf.predict([changeNameToNumber('Ricardo')]))
+print("Xavier ", clf.predict([changeNameToNumber('Xavier')]))
+print("Bruno", clf.predict([changeNameToNumber('Bruno')]))
+print("Alexandre",clf.predict([changeNameToNumber('Alexandre')]))
+print(changeNameToNumber('Manuel')[0])
+print("Manuel ",clf.predict([changeNameToNumber('Manuel')]))
+'''
