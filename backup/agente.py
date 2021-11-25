@@ -134,6 +134,7 @@ def calcularDistancia2Pontos(ponto1, ponto2):
     pontoMedio.append((int(dictLoja[ponto2]['YCIMA']) + int(dictLoja[ponto2]['YBAIXO'])) /2)
     distancia= ((pontoMedio[0]-ponto1[0])**2 + (pontoMedio[1]-ponto1[1])**2)**0.5
     return distancia
+    
 def resp1():
     #Qual foi a penúltima pessoa do sexo feminino que viste?
     if mulher[0] == 'null':
