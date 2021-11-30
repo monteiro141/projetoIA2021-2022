@@ -114,15 +114,27 @@ def distanceWalked(posicaoAnterior,posicaoAtual):
 
 distanciaTotal=0
 currentTime=time.time()
+startTime=0
+state=0
 
 def timeanddistanceWalked(posicaoAnterior, posicaoAtual):
-    global distanciaTotal, currentTime
-    if posicaoAnterior==posicaoAtual and posicaoAnterior != [-1,-1]:
-        endTime=time.time()
-        currentTime=endTime
-        
-    else:
-        distanciaTotal+=distanceWalked(posicaoAnterior,posicaoAtual)
+    global distanciaTotal,startTime,state
+
+    if(state==0):
+        if posicaoAnterior != posicaoAtual and posicaoAnterior != [-1,-1]:
+            startTime = time.time()
+            state = 1
+    if state==1:
+        if posicaoAnterior == posicaoAtual:
+            state = 2
+        else:
+            distanciaTotal += distanceWalked(posicaoAnterior,posicaoAtual)
+    if state ==2:
+        posicoes_questao5.append([distanciaTotal,round((time.time()-startTime),2)])
+        state=0
+        distanciaTotal=0
+
+    
         
 
 
@@ -149,18 +161,10 @@ def work(posicao, bateria, objetos):
     
 
     
-    disWalked = 0
-    if round(time.time(),0) - round(currentTime,0) >= 1:
-        if (disWalked:=distanceWalked(posicao_anterior_distance, posicao_atual_distance)) != 0 and not (posicao_anterior_distance==posicao_atual_distance):
-            posicoes_questao5.append(disWalked)
-            print(disWalked, "Posicao:", posicao_atual_distance, "Anterior", posicao_anterior_distance)
-            print("HELLO")
-        currentTime=round(time.time(),0)
-        posicao_anterior_distance[0]=posicao_atual_distance[0]
-        posicao_anterior_distance[1]=posicao_atual_distance[1]
+    timeanddistanceWalked(posicao_anterior_distance,posicao_atual_distance)
+    posicao_anterior_distance[0]=posicao_atual_distance[0]
+    posicao_anterior_distance[1]=posicao_atual_distance[1]
 
-        
-    
     
     
     
@@ -184,6 +188,31 @@ def calcularDistancia2Pontos(ponto1, ponto2):
     distancia= ((pontoMedio[0]-ponto1[0])**2 + (pontoMedio[1]-ponto1[1])**2)**0.5
     return distancia
     
+def conhecerLocaisEDistanciaAteEles(Local):
+    conhece=False
+    for i in dictLoja:    
+        if dictLoja[i]['zona'] == Local:
+            zona=i
+            conhece=True
+            break
+    if conhece and dictLoja[viewZone(posicao_atual)]['zona'] == Local:
+        return 0
+    if conhece and dictLoja[viewZone(posicao_atual)]['zona'] != Local:
+        gnext=G.copy()
+        zona_atual=viewZone(posicao_atual)
+        ligacoes_zona=gnext.edges([zona_atual])
+        for i in ligacoes_zona:
+            gnext.add_edge('P_A', i[1], weight=calcularDistancia2Pontos(posicao_atual,i[1]))
+        
+        caminho=nx.astar_path(gnext,'P_A', zona)
+        distancia=0
+        for i in range(0, (len(caminho)-1)):
+            distancia+=gnext.get_edge_data(caminho[i], caminho[i+1])["weight"]
+        return round(distancia,2)
+    else:
+        return -1
+    pass
+
 def resp1():
     #Qual foi a penúltima pessoa do sexo feminino que viste?
     if mulher[0] == 'null':
@@ -228,32 +257,46 @@ def resp3():
 
 def resp4():
     #Qual a distância até ao talho?
-    conhece=False
-    for i in dictLoja:    
-        if dictLoja[i]['zona'] == 'talho':
-            talho=i
-            conhece=True
-            break
-    if conhece:
-        gnext=G
-        zona_atual=viewZone(posicao_atual)
-        ligacoes_zona=gnext.edges([zona_atual])
-
-        for i in ligacoes_zona:
-            gnext.add_edge('P_A', i[1], weight=calcularDistancia2Pontos(posicao_atual,i[1]))
-        
-        caminho=nx.astar_path(gnext,'P_A', talho)
-        distancia=0
-        for i in range(0, (len(caminho)-1)):
-            distancia+=gnext.get_edge_data(caminho[i], caminho[i+1])["weight"]
-        print("Distância da posição atual ao talho é",round(distancia,2))
+    conhecerTalho = conhecerLocaisEDistanciaAteEles("talho")
+    if conhecerTalho > 0:
+        print("Distância da posição atual ao talho é",conhecerTalho)
+    elif conhecerTalho == 0:
+        print("Chegou ao talho.")
     else:
         print("Não sabe onde é o talho.")
     pass
 
 def resp5():
     #Quanto tempo achas que demoras a ir de onde estás até à caixa?
-    print(posicoes_questao5)
+    '''
+    X distancia a percorrer
+    Y tempo que demora a percorrer
+    '''
+
+    conhecerCaixa = conhecerLocaisEDistanciaAteEles("caixa")
+    if conhecerCaixa >0:
+        N = len(posicoes_questao5) 
+
+        xiyi = 0 
+        xi = 0
+        yi = 0
+        xi2 = 0
+
+        for x,y in posicoes_questao5:
+            xiyi += x*y
+            xi += x
+            yi +=  y
+            xi2 += x**2
+
+        w1 = ((N*xiyi) - xi * yi) / ((N*xi2) - xi**2)
+        w0 = (yi - w1*xi)/N 
+        print("Demora cerca de",w1*conhecerCaixa+w0,"segundos a chegar à caixa.")
+    
+    elif conhecerCaixa ==0:
+        print("Ja está na caixa.")
+
+    else:
+        print("Não sabe onde é a caixa.")
     pass
 
 def resp6():
