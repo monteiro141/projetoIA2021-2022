@@ -25,8 +25,11 @@ from sklearn.tree import DecisionTreeClassifier
 #Global variables
 mulher=['null','null']
 posicao_anterior=[-1,-1]
+posicao_anterior_distance=[-1,-1]
 objeto_anterior = []
 posicao_atual=[-1,-1]
+posicao_atual_distance=[-1,-1]
+posicoes_questao5=[]
 
 G = nx.Graph()
 dictLoja = {}
@@ -84,6 +87,7 @@ arvore_Decisao = DecisionTreeClassifier()
 my_xfeatures =treinador_Nomes.transform(nomes_features_treino)
 arvore_Decisao.fit(my_xfeatures, genero_features_treino)
 
+
 '''
 Verifica o género das pessoas que o robô passa
 '''
@@ -104,7 +108,26 @@ def viewZone(pos):
     for i in dictLoja:
        if int(dictLoja[i]['XDIR']) >= pos[0] >= int(dictLoja[i]['XESQ']) and int(dictLoja[i]['YCIMA']) <= pos[1] <= int(dictLoja[i]['YBAIXO']):
            return i
+
+def distanceWalked(posicaoAnterior,posicaoAtual):
+    return ((posicaoAtual[0]-posicaoAnterior[0])**2+(posicaoAtual[1] - posicaoAnterior[1])**2)**0.5
+
+distanciaTotal=0
+currentTime=time.time()
+
+def timeanddistanceWalked(posicaoAnterior, posicaoAtual):
+    global distanciaTotal, currentTime
+    if posicaoAnterior==posicaoAtual and posicaoAnterior != [-1,-1]:
+        endTime=time.time()
+        currentTime=endTime
+        
+    else:
+        distanciaTotal+=distanceWalked(posicaoAnterior,posicaoAtual)
+        
+
+
 def work(posicao, bateria, objetos):
+    global currentTime, posicao_anterior_distance, posicao_atual_distance, posicoes_questao5
     # esta função é invocada em cada ciclo de clock
     # e pode servir para armazenar informação recolhida pelo agente
     # recebe:
@@ -115,8 +138,32 @@ def work(posicao, bateria, objetos):
     # podem achar o tempo atual usando, p.ex.
     # time.time()
     #pass
+    if posicao_anterior_distance==[-1,-1]:
+        posicao_anterior_distance[0]=posicao[0]
+        posicao_anterior_distance[1]=posicao[1]
+    
     posicao_atual[0]=posicao[0]
     posicao_atual[1]=posicao[1]
+    posicao_atual_distance[0]=posicao[0]
+    posicao_atual_distance[1]=posicao[1]
+    
+
+    
+    disWalked = 0
+    if round(time.time(),0) - round(currentTime,0) >= 1:
+        if (disWalked:=distanceWalked(posicao_anterior_distance, posicao_atual_distance)) != 0 and not (posicao_anterior_distance==posicao_atual_distance):
+            posicoes_questao5.append(disWalked)
+            print(disWalked, "Posicao:", posicao_atual_distance, "Anterior", posicao_anterior_distance)
+            print("HELLO")
+        currentTime=round(time.time(),0)
+        posicao_anterior_distance[0]=posicao_atual_distance[0]
+        posicao_anterior_distance[1]=posicao_atual_distance[1]
+
+        
+    
+    
+    
+    
     if posicao_anterior!=posicao and objeto_anterior!=objetos:
         objeto_anterior.clear()
         for i in objetos:
@@ -124,6 +171,8 @@ def work(posicao, bateria, objetos):
                 viewGender(i.split('_')[1])
             if 'zona' in i:
                 checkZone(i.split('_')[1], posicao)
+            if 'caixa' in i:
+                checkZone(i.split('_')[0], posicao)
             objeto_anterior.append(i)
         posicao_anterior[0]=posicao[0]
         posicao_anterior[1]=posicao[1]
@@ -146,6 +195,7 @@ def resp1():
 def resp2():
     #Em que tipo de zona estás agora?
     print(dictLoja[viewZone(posicao_atual)]['zona'])
+    pass
     
 
 def resp3():
@@ -171,6 +221,7 @@ def resp3():
         print(caminhoFinal)
     else:
         print("Não sabe onde é o papelaria.")
+    pass
         
         
     
@@ -198,9 +249,11 @@ def resp4():
         print("Distância da posição atual ao talho é",round(distancia,2))
     else:
         print("Não sabe onde é o talho.")
+    pass
 
 def resp5():
     #Quanto tempo achas que demoras a ir de onde estás até à caixa?
+    print(posicoes_questao5)
     pass
 
 def resp6():
@@ -209,6 +262,7 @@ def resp6():
 
 def resp7():
     #Qual é a probabilidade da próxima pessoa a encontrares ser uma criança?
+
     pass
 
 def resp8():
