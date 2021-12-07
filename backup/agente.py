@@ -15,9 +15,7 @@ import time
 import csv
 import numpy as np
 import networkx as nx
-from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
-from sklearn.naive_bayes import MultinomialNB
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.tree import DecisionTreeClassifier
 
@@ -76,7 +74,7 @@ features = np.vectorize(features)
 nomes_features = features(nomes)
 genero_features = genero
 
-nomes_features_treino, nomes_features_teste, genero_features_treino, genero_features_teste = train_test_split(nomes_features, genero_features, test_size=0.33, random_state=42)
+nomes_features_treino, nomes_features_teste, genero_features_treino, genero_features_teste = train_test_split(nomes_features, genero_features, test_size=0.05, random_state=42)
 
 treinador_Nomes = DictVectorizer()
 treinador_Nomes.fit_transform(nomes_features_treino)
@@ -95,7 +93,7 @@ def viewGender(objeto):
     transform_Nomes=treinador_Nomes.transform(features([objeto]))
     transform_Array = transform_Nomes.toarray()
     previsao = arvore_Decisao.predict(transform_Array)
-    if int(previsao[0]) == 0:
+    if int(previsao[0]) == 0 and mulher[1]!=objeto:
         mulher[0]=mulher[1]
         mulher[1]=objeto
 
@@ -134,12 +132,26 @@ def timeanddistanceWalked(posicaoAnterior, posicaoAtual):
         state=0
         distanciaTotal=0
 
-    
+currentTimeBattery=time.time()
+inicialBattery=100
+stateBattery=0
+BatteryData=[]
+currentBattery=0
+def predictBattery():
+    global state, currentTimeBattery, inicialBattery,BatteryData, currentBattery
+
+    if round(time.time()-currentTimeBattery,2)>=1 and currentBattery != 0 and currentBattery <= inicialBattery:
+        currentTimeBattery=time.time()
+        BatteryData.append([inicialBattery, inicialBattery - currentBattery])
+        inicialBattery=currentBattery
+    elif currentBattery > inicialBattery:
+        inicialBattery=currentBattery
+
         
 
 
 def work(posicao, bateria, objetos):
-    global currentTime, posicao_anterior_distance, posicao_atual_distance, posicoes_questao5
+    global currentTime, posicao_anterior_distance, posicao_atual_distance, posicoes_questao5, currentBattery
     # esta função é invocada em cada ciclo de clock
     # e pode servir para armazenar informação recolhida pelo agente
     # recebe:
@@ -159,7 +171,8 @@ def work(posicao, bateria, objetos):
     posicao_atual_distance[0]=posicao[0]
     posicao_atual_distance[1]=posicao[1]
     
-
+    currentBattery=bateria
+    predictBattery()
     
     timeanddistanceWalked(posicao_anterior_distance,posicao_atual_distance)
     posicao_anterior_distance[0]=posicao_atual_distance[0]
@@ -290,7 +303,7 @@ def resp5():
 
         w1 = ((N*xiyi) - xi * yi) / ((N*xi2) - xi**2)
         w0 = (yi - w1*xi)/N 
-        print("Demora cerca de",w1*conhecerCaixa+w0,"segundos a chegar à caixa.")
+        print("Demora cerca de",round(w1*conhecerCaixa+w0,2),"segundos a chegar à caixa.")
     
     elif conhecerCaixa ==0:
         print("Ja está na caixa.")
@@ -301,6 +314,40 @@ def resp5():
 
 def resp6():
     #Quanto tempo achas que falta até ficares com metade da bateria que tens agora?
+    global BatteryData
+   
+    
+
+    N = len(BatteryData) 
+
+    xiyi = 0 
+    xi = 0
+    yi = 0
+    xi2 = 0
+
+    for x,y in BatteryData:
+        xiyi += x*y
+        xi += x
+        yi +=  y
+        xi2 += x**2
+
+    w1 = ((N*xiyi) - xi * yi) / ((N*xi2) - xi**2)
+    w0 = (yi - w1*xi)/N
+   
+    halfBattery=currentBattery/2
+    #batteryLoss=w1*currentBattery+w0
+    #print("PERDA:",batteryLoss)
+    secondsToDrain=0
+    
+    while halfBattery > 0:
+        batteryLoss=w1*halfBattery+w0
+        secondsToDrain+=1
+        halfBattery=halfBattery -batteryLoss
+        print("BATERIA:",halfBattery)
+    print("Para ficar com metade da bateria que tem agora demora",secondsToDrain)
+    """
+    Implementar SVM para ver se há melhorias
+    """
     pass
 
 def resp7():
