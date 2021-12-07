@@ -18,6 +18,7 @@ import networkx as nx
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.tree import DecisionTreeClassifier
+import pyAgrum as gum
 
 
 #Global variables
@@ -148,10 +149,10 @@ def predictBattery():
         inicialBattery=currentBattery
 
         
-
+Actual_Adults_Karts_Employees=[]
 
 def work(posicao, bateria, objetos):
-    global currentTime, posicao_anterior_distance, posicao_atual_distance, posicoes_questao5, currentBattery
+    global currentTime, posicao_anterior_distance, posicao_atual_distance, posicoes_questao5, currentBattery, Actual_Adults_Karts_Employees
     # esta função é invocada em cada ciclo de clock
     # e pode servir para armazenar informação recolhida pelo agente
     # recebe:
@@ -190,6 +191,8 @@ def work(posicao, bateria, objetos):
                 checkZone(i.split('_')[1], posicao)
             if 'caixa' in i:
                 checkZone(i.split('_')[0], posicao)
+            if ('adulto' in i or 'funcionário' in i or 'carrinho' in i or 'criança' in i) and i not in Actual_Adults_Karts_Employees:
+                Actual_Adults_Karts_Employees.append(i)
             objeto_anterior.append(i)
         posicao_anterior[0]=posicao[0]
         posicao_anterior[1]=posicao[1]
@@ -316,8 +319,6 @@ def resp6():
     #Quanto tempo achas que falta até ficares com metade da bateria que tens agora?
     global BatteryData
    
-    
-
     N = len(BatteryData) 
 
     xiyi = 0 
@@ -335,15 +336,13 @@ def resp6():
     w0 = (yi - w1*xi)/N
    
     halfBattery=currentBattery/2
-    #batteryLoss=w1*currentBattery+w0
-    #print("PERDA:",batteryLoss)
+
     secondsToDrain=0
     
     while halfBattery > 0:
         batteryLoss=w1*halfBattery+w0
         secondsToDrain+=1
         halfBattery=halfBattery -batteryLoss
-        print("BATERIA:",halfBattery)
     print("Para ficar com metade da bateria que tem agora demora",secondsToDrain)
     """
     Implementar SVM para ver se há melhorias
@@ -352,7 +351,48 @@ def resp6():
 
 def resp7():
     #Qual é a probabilidade da próxima pessoa a encontrares ser uma criança?
+    global Actual_Adults_Karts_Employees
+    if len(Actual_Adults_Karts_Employees)!=0:
+        TotalN=len(Actual_Adults_Karts_Employees)
+        Total_Adults_Karts_Employes=[0,0,0,0]
+        for i in Actual_Adults_Karts_Employees:
+            if 'funcionário' in i:
+                Total_Adults_Karts_Employes[2]+=1
+                print("Teste")
+            elif 'carrinho' in i:
+                Total_Adults_Karts_Employes[1]+=1
+                TotalN+=1
+            elif 'adulto' in i:
+                Total_Adults_Karts_Employes[0]+=1
+                TotalN+=1
+            else:
+                Total_Adults_Karts_Employes[3]+=1
+                TotalN+=1
 
+        Probability_Adults_Karts_Employess=[Total_Adults_Karts_Employes[0]/TotalN,Total_Adults_Karts_Employes[1]/TotalN,Total_Adults_Karts_Employes[2]/TotalN,Total_Adults_Karts_Employes[3]/TotalN]
+        bayesianNetwork=gum.BayesNet('Supermercado')
+        Adults=bayesianNetwork.add(gum.LabelizedVariable('Adults','Adults',2))
+        Karts=bayesianNetwork.add(gum.LabelizedVariable('Karts','Karts',2))
+        Child=bayesianNetwork.add(gum.LabelizedVariable('Child','Child',2))
+
+        bayesianNetwork.addArc(Adults,Child)
+        bayesianNetwork.addArc(Karts,Child)
+
+        bayesianNetwork.cpt(Adults)[{}]=[1-Probability_Adults_Karts_Employess[0],Probability_Adults_Karts_Employess[0]]
+        bayesianNetwork.cpt(Karts)[{}]=[1-Probability_Adults_Karts_Employess[1],Probability_Adults_Karts_Employess[1]]
+
+        bayesianNetwork.cpt(Child)[{'Adults': 1,'Karts': 1}]=[0.2 , 0.8]
+        bayesianNetwork.cpt(Child)[{'Adults': 1,'Karts': 0}]=[0.5, 0.5]
+        bayesianNetwork.cpt(Child)[{'Adults': 0,'Karts': 1}]=[0.9, 0.1]
+        bayesianNetwork.cpt(Child)[{'Adults': 0,'Karts': 0}]=[0.95 , 0.05]
+
+        ie=gum.LazyPropagation(bayesianNetwork)
+
+        ie.setEvidence({})
+        ie.makeInference()
+        print (ie.posterior('Child'))
+    else:
+        print("Dados insuficientes para dar resposta.")
     pass
 
 def resp8():
