@@ -70,7 +70,6 @@ def features(name):
     }
 
 features = np.vectorize(features)
-#print(features(["Paula", "Joaquim", "Miguel","Susana","Cláudia","Elsa"]))
 
 nomes_features = features(nomes)
 genero_features = genero
@@ -79,9 +78,6 @@ nomes_features_treino, nomes_features_teste, genero_features_treino, genero_feat
 
 treinador_Nomes = DictVectorizer()
 treinador_Nomes.fit_transform(nomes_features_treino)
-
-
- 
 arvore_Decisao = DecisionTreeClassifier()
 my_xfeatures =treinador_Nomes.transform(nomes_features_treino)
 arvore_Decisao.fit(my_xfeatures, genero_features_treino)
@@ -263,7 +259,15 @@ def resp3():
                     caminhoFinal.append(auxiliar)
             else:
                 caminhoFinal.append(i)
-        print(caminhoFinal)
+        #print(caminhoFinal)
+        for i in range(0,len(caminhoFinal)-1):
+            if 'S' in caminhoFinal[i] and dictLoja[caminhoFinal[i]]['zona'] != 'Nao sabe':
+                print(dictLoja[caminhoFinal[i]]['zona'],"-> ",end="")
+            elif 'C' in caminhoFinal[i]:
+                print("Corredor",caminhoFinal[i][1],"-> ",end="")
+            else:
+                print(caminhoFinal[i],"-> ",end="")
+        print(dictLoja[caminhoFinal[len(caminhoFinal)-1]]['zona'])
     else:
         print("Não sabe onde é o papelaria.")
     pass
@@ -391,10 +395,56 @@ def resp7():
         ie.setEvidence({})
         ie.makeInference()
         print (ie.posterior('Child'))
+        print (ie.posterior('Child')[0])
+        print (ie.posterior('Child')[1])
     else:
         print("Dados insuficientes para dar resposta.")
     pass
 
 def resp8():
     #Qual é a probabilidade de encontrar um adulto numa zona se estiver lá uma criança mas não estiver lá um carrinho?
+    global Actual_Adults_Karts_Employees
+    if len(Actual_Adults_Karts_Employees)!=0:
+        TotalN=len(Actual_Adults_Karts_Employees)
+        Total_Adults_Karts_Employes=[0,0,0,0]
+        for i in Actual_Adults_Karts_Employees:
+            if 'funcionário' in i:
+                Total_Adults_Karts_Employes[2]+=1
+            elif 'carrinho' in i:
+                Total_Adults_Karts_Employes[1]+=1
+                TotalN+=1
+            elif 'adulto' in i:
+                Total_Adults_Karts_Employes[0]+=1
+                TotalN+=1
+            else:
+                Total_Adults_Karts_Employes[3]+=1
+                TotalN+=1
+
+        Probability_Adults_Karts_Employess=[Total_Adults_Karts_Employes[0]/TotalN,Total_Adults_Karts_Employes[1]/TotalN,Total_Adults_Karts_Employes[2]/TotalN,Total_Adults_Karts_Employes[3]/TotalN]
+        bayesianNetwork=gum.BayesNet('Supermercado')
+        Adults=bayesianNetwork.add(gum.LabelizedVariable('Adults','Adults',2))
+        Karts=bayesianNetwork.add(gum.LabelizedVariable('Karts','Karts',2))
+        Child=bayesianNetwork.add(gum.LabelizedVariable('Child','Child',2))
+
+        bayesianNetwork.addArc(Adults,Child)
+        bayesianNetwork.addArc(Karts,Child)
+
+        bayesianNetwork.cpt(Adults)[{}]=[1-Probability_Adults_Karts_Employess[0],Probability_Adults_Karts_Employess[0]]
+        bayesianNetwork.cpt(Karts)[{}]=[1-Probability_Adults_Karts_Employess[1],Probability_Adults_Karts_Employess[1]]
+
+        bayesianNetwork.cpt(Child)[{'Adults': 1,'Karts': 1}]=[0.2 , 0.8]
+        bayesianNetwork.cpt(Child)[{'Adults': 1,'Karts': 0}]=[0.5, 0.5]
+        bayesianNetwork.cpt(Child)[{'Adults': 0,'Karts': 1}]=[0.9, 0.1]
+        bayesianNetwork.cpt(Child)[{'Adults': 0,'Karts': 0}]=[0.95 , 0.05]
+
+        ie=gum.LazyPropagation(bayesianNetwork)
+
+        ie.setEvidence({'Child':1,'Karts':0})
+        ie.makeInference()
+        print ((ie.posterior('Adults')))
+        print ((ie.posterior('Adults'))[0])
+        print ((ie.posterior('Adults'))[1])
+    else:
+        print("Dados insuficientes para dar resposta.")
+    
     pass
