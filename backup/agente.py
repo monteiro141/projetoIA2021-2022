@@ -411,10 +411,6 @@ def resp7():
         ie.setEvidence({})
         ie.makeInference()
         print ("A probabilidade é ",round(ie.posterior('Child')[1],3))
-        print("Adultos:",Total_Adults_Karts_Employes[0])
-        print("Carrinhos:",Total_Adults_Karts_Employes[1])
-        print("Funcionarios:",Total_Adults_Karts_Employes[2])
-        print("Criancas:",Total_Adults_Karts_Employes[3])
     else:
         print("Dados insuficientes para dar resposta.")
     pass
