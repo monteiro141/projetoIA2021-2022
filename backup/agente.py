@@ -49,6 +49,12 @@ for row in data:
     key, *values = row   
     dictLoja[key] = {key: value for key, value in zip(header, values)}
 
+for i in dictLoja:
+    dictLoja[i]['adultos'] = 0
+    dictLoja[i]['carrinhos'] = 0
+    dictLoja[i]['criancas'] = 0
+    dictLoja[i]['funcionarios'] = 0
+
 '''
 Lê nomes de rapazes e raparigas para treinar
 '''
@@ -189,6 +195,17 @@ def work(posicao, bateria, objetos):
                 checkZone(i.split('_')[0], posicao)
             if ('adulto' in i or 'funcionário' in i or 'carrinho' in i or 'criança' in i) and i not in Actual_Adults_Karts_Employees:
                 Actual_Adults_Karts_Employees.append(i)
+                currentZone = viewZone(posicao)
+                if 'adulto' in i:
+                    dictLoja[currentZone]['adultos'] += 1
+                if 'funcionário' in i:
+                    dictLoja[currentZone]['funcionarios'] += 1
+                if 'carrinho' in i:
+                    dictLoja[currentZone]['carrinhos'] += 1
+                if 'criança' in i:
+                    dictLoja[currentZone]['criancas'] += 1
+
+
             objeto_anterior.append(i)
         posicao_anterior[0]=posicao[0]
         posicao_anterior[1]=posicao[1]
@@ -224,6 +241,7 @@ def conhecerLocaisEDistanciaAteEles(Local):
     else:
         return -1
     pass
+
 
 def resp1():
     #Qual foi a penúltima pessoa do sexo feminino que viste?
@@ -362,16 +380,14 @@ def resp7():
         for i in Actual_Adults_Karts_Employees:
             if 'funcionário' in i:
                 Total_Adults_Karts_Employes[2]+=1
-                print("Teste")
             elif 'carrinho' in i:
                 Total_Adults_Karts_Employes[1]+=1
-                TotalN+=1
             elif 'adulto' in i:
                 Total_Adults_Karts_Employes[0]+=1
-                TotalN+=1
             else:
                 Total_Adults_Karts_Employes[3]+=1
-                TotalN+=1
+
+        
 
         Probability_Adults_Karts_Employess=[Total_Adults_Karts_Employes[0]/TotalN,Total_Adults_Karts_Employes[1]/TotalN,Total_Adults_Karts_Employes[2]/TotalN,Total_Adults_Karts_Employes[3]/TotalN]
         bayesianNetwork=gum.BayesNet('Supermercado')
@@ -394,57 +410,37 @@ def resp7():
 
         ie.setEvidence({})
         ie.makeInference()
-        print (ie.posterior('Child'))
-        print (ie.posterior('Child')[0])
-        print (ie.posterior('Child')[1])
+        print ("A probabilidade é ",round(ie.posterior('Child')[1],3))
+        print("Adultos:",Total_Adults_Karts_Employes[0])
+        print("Carrinhos:",Total_Adults_Karts_Employes[1])
+        print("Funcionarios:",Total_Adults_Karts_Employes[2])
+        print("Criancas:",Total_Adults_Karts_Employes[3])
     else:
         print("Dados insuficientes para dar resposta.")
     pass
 
 def resp8():
     #Qual é a probabilidade de encontrar um adulto numa zona se estiver lá uma criança mas não estiver lá um carrinho?
-    global Actual_Adults_Karts_Employees
-    if len(Actual_Adults_Karts_Employees)!=0:
-        TotalN=len(Actual_Adults_Karts_Employees)
-        Total_Adults_Karts_Employes=[0,0,0,0]
-        for i in Actual_Adults_Karts_Employees:
-            if 'funcionário' in i:
-                Total_Adults_Karts_Employes[2]+=1
-            elif 'carrinho' in i:
-                Total_Adults_Karts_Employes[1]+=1
-                TotalN+=1
-            elif 'adulto' in i:
-                Total_Adults_Karts_Employes[0]+=1
-                TotalN+=1
-            else:
-                Total_Adults_Karts_Employes[3]+=1
-                TotalN+=1
-
-        Probability_Adults_Karts_Employess=[Total_Adults_Karts_Employes[0]/TotalN,Total_Adults_Karts_Employes[1]/TotalN,Total_Adults_Karts_Employes[2]/TotalN,Total_Adults_Karts_Employes[3]/TotalN]
-        bayesianNetwork=gum.BayesNet('Supermercado')
-        Adults=bayesianNetwork.add(gum.LabelizedVariable('Adults','Adults',2))
-        Karts=bayesianNetwork.add(gum.LabelizedVariable('Karts','Karts',2))
-        Child=bayesianNetwork.add(gum.LabelizedVariable('Child','Child',2))
-
-        bayesianNetwork.addArc(Adults,Child)
-        bayesianNetwork.addArc(Karts,Child)
-
-        bayesianNetwork.cpt(Adults)[{}]=[1-Probability_Adults_Karts_Employess[0],Probability_Adults_Karts_Employess[0]]
-        bayesianNetwork.cpt(Karts)[{}]=[1-Probability_Adults_Karts_Employess[1],Probability_Adults_Karts_Employess[1]]
-
-        bayesianNetwork.cpt(Child)[{'Adults': 1,'Karts': 1}]=[0.2 , 0.8]
-        bayesianNetwork.cpt(Child)[{'Adults': 1,'Karts': 0}]=[0.5, 0.5]
-        bayesianNetwork.cpt(Child)[{'Adults': 0,'Karts': 1}]=[0.9, 0.1]
-        bayesianNetwork.cpt(Child)[{'Adults': 0,'Karts': 0}]=[0.95 , 0.05]
-
-        ie=gum.LazyPropagation(bayesianNetwork)
-
-        ie.setEvidence({'Child':1,'Karts':0})
-        ie.makeInference()
-        print ((ie.posterior('Adults')))
-        print ((ie.posterior('Adults'))[0])
-        print ((ie.posterior('Adults'))[1])
-    else:
-        print("Dados insuficientes para dar resposta.")
-    
+    pACnotK = 0
+    pCnotK = 0
+    halls = [0,2,2,0,0,0]
+    for i in dictLoja:
+        if 'S' in i or ('C' in i and halls[int(i[1])-1]==2):
+            if dictLoja[i]['adultos'] >0 and dictLoja[i]['criancas'] >0 and dictLoja[i]['carrinhos'] == 0:
+                pACnotK +=1
+            if dictLoja[i]['criancas'] >0 and dictLoja[i]['carrinhos'] == 0: 
+                pCnotK +=1
+        elif 'C' in i and halls[int(i[1])-1]==0:
+            if (dictLoja['C'+i[1]+'_1']['adultos']+dictLoja['C'+i[1]+'_2']['adultos'] >0 and 
+            dictLoja['C'+i[1]+'_1']['criancas']+dictLoja['C'+i[1]+'_2']['criancas'] >0 and 
+            dictLoja['C'+i[1]+'_1']['carrinhos']+dictLoja['C'+i[1]+'_2']['carrinhos'] == 0):
+                pACnotK +=1
+            if (dictLoja['C'+i[1]+'_1']['criancas']+dictLoja['C'+i[1]+'_2']['criancas'] >0 and 
+            dictLoja['C'+i[1]+'_1']['carrinhos']+dictLoja['C'+i[1]+'_2']['carrinhos'] == 0):
+                pCnotK +=1
+            halls[int(i[1])-1] = 1
+    try:
+        print("A probabilidade é",round(pACnotK/pCnotK,2))
+    except ZeroDivisionError:
+        print("Não há zonas onde haja uma criança e não haja carrinho")
     pass
