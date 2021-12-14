@@ -246,9 +246,9 @@ def conhecerLocaisEDistanciaAteEles(Local):
 def resp1():
     #Qual foi a penúltima pessoa do sexo feminino que viste?
     if mulher[0] == 'null':
-        print("O robô ainda não passou pelo menos por duas mulheres, logo não existe penúltima pessoa do sexo feminino")
+        print("Ainda não passei por pelo menos duas mulheres, logo não existe penúltima pessoa do sexo feminino")
     else:
-        print("Penúltima pessoa do sexo feminino vista foi a", mulher[0])
+        print("A penúltima pessoa do sexo feminino vista foi a", mulher[0]+".")
     pass
 
 def resp2():
