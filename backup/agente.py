@@ -253,7 +253,10 @@ def resp1():
 
 def resp2():
     #Em que tipo de zona estás agora?
-    print(dictLoja[viewZone(posicao_atual)]['zona'])
+    if dictLoja[viewZone(posicao_atual)]['zona'] == "Nao sabe":
+        print("Não sei onde estou.")
+    else:
+        print("Estou na zona " + dictLoja[viewZone(posicao_atual)]['zona']+".")
     pass
     
 
@@ -287,7 +290,7 @@ def resp3():
                 print(caminhoFinal[i],"-> ",end="")
         print(dictLoja[caminhoFinal[len(caminhoFinal)-1]]['zona'])
     else:
-        print("Não sabe onde é o papelaria.")
+        print("Não sei onde é o papelaria.")
     pass
         
         
@@ -301,7 +304,7 @@ def resp4():
     elif conhecerTalho == 0:
         print("Chegou ao talho.")
     else:
-        print("Não sabe onde é o talho.")
+        print("Não sei onde é o talho.")
     pass
 
 def resp5():
