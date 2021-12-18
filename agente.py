@@ -486,29 +486,71 @@ def resp7():
 
 def resp8():
     #Qual é a probabilidade de encontrar um adulto numa zona se estiver lá uma criança mas não estiver lá um carrinho?
-    pACnotK = 0
-    pCnotK = 0
-    halls = [0,2,2,0,0,0]
-    #Analisa-se se existe alguma zona onde o robô tenha encontrado um adulto e uma criança e também se encontrou apenas uma criança
-    for i in dictLoja:
-        if 'S' in i or ('C' in i and halls[int(i[1])-1]==2):
-            if dictLoja[i]['adultos'] >0 and dictLoja[i]['criancas'] >0 and dictLoja[i]['carrinhos'] == 0:
-                pACnotK +=1
-            if dictLoja[i]['criancas'] >0 and dictLoja[i]['carrinhos'] == 0: 
-                pCnotK +=1
-        elif 'C' in i and halls[int(i[1])-1]==0:
-            if (dictLoja['C'+i[1]+'_1']['adultos']+dictLoja['C'+i[1]+'_2']['adultos'] >0 and 
-            dictLoja['C'+i[1]+'_1']['criancas']+dictLoja['C'+i[1]+'_2']['criancas'] >0 and 
-            dictLoja['C'+i[1]+'_1']['carrinhos']+dictLoja['C'+i[1]+'_2']['carrinhos'] == 0):
-                pACnotK +=1
-            if (dictLoja['C'+i[1]+'_1']['criancas']+dictLoja['C'+i[1]+'_2']['criancas'] >0 and 
-            dictLoja['C'+i[1]+'_1']['carrinhos']+dictLoja['C'+i[1]+'_2']['carrinhos'] == 0):
-                pCnotK +=1
-            halls[int(i[1])-1] = 1
+    global Actual_Adults_Karts_Employees
+
+    #Soma-se o número de adultos, funcionários, crianças e carrinhos encontrados até ao momento pelo robô
+    if len(Actual_Adults_Karts_Employees)!=0:
+        TotalN=len(Actual_Adults_Karts_Employees)
+        Total_Adults_Karts_Employes=[0,0,0,0]
+        for i in Actual_Adults_Karts_Employees:
+            if 'funcionário' in i:
+                Total_Adults_Karts_Employes[2]+=1
+            elif 'carrinho' in i:
+                Total_Adults_Karts_Employes[1]+=1
+            elif 'adulto' in i:
+                Total_Adults_Karts_Employes[0]+=1
+            else:
+                Total_Adults_Karts_Employes[3]+=1
+
+        
+        #calcula-se a probabilidade dos adultos, funcionários, crianças e carrinhos 
+        Probability_Adults_Karts_Employess=[Total_Adults_Karts_Employes[0]/TotalN,Total_Adults_Karts_Employes[1]/TotalN,Total_Adults_Karts_Employes[2]/TotalN,Total_Adults_Karts_Employes[3]/TotalN]
+        
+        #Criação da rede Bayesiana
+        
+        bayesianNetwork=gum.BayesNet('Supermercado')
+        Adults=bayesianNetwork.add(gum.LabelizedVariable('Adults','Adults',2))
+        Karts=bayesianNetwork.add(gum.LabelizedVariable('Karts','Karts',2))
+        Child=bayesianNetwork.add(gum.LabelizedVariable('Child','Child',2))
+
+        bayesianNetwork.addArc(Adults,Child)
+        bayesianNetwork.addArc(Karts,Child)
+
+        bayesianNetwork.cpt(Adults)[{}]=[1-Probability_Adults_Karts_Employess[0],Probability_Adults_Karts_Employess[0]]
+        bayesianNetwork.cpt(Karts)[{}]=[1-Probability_Adults_Karts_Employess[1],Probability_Adults_Karts_Employess[1]]
+
+        bayesianNetwork.cpt(Child)[{'Adults': 1,'Karts': 1}]=[0.2 , 0.8]
+        bayesianNetwork.cpt(Child)[{'Adults': 1,'Karts': 0}]=[0.5, 0.5]
+        bayesianNetwork.cpt(Child)[{'Adults': 0,'Karts': 1}]=[0.9, 0.1]
+        bayesianNetwork.cpt(Child)[{'Adults': 0,'Karts': 0}]=[0.95 , 0.05]
+
+        #P(A| C /\ -K) - pelas formulas
+        ie=gum.LazyPropagation(bayesianNetwork)
+
+        ie.setEvidence({'Adults':1,'Karts':0})
+        ie.makeInference()
+        A = ie.posterior('Child')[1]
+
+        ie=gum.LazyPropagation(bayesianNetwork)
+        ie.setEvidence({'Karts':0})
+        ie.makeInference()
+        B = ie.posterior('Adults')[1]
+
+        ie=gum.LazyPropagation(bayesianNetwork)
+        ie.setEvidence({'Karts':0})
+        ie.makeInference()
+        C = ie.posterior('Child')[1]
+        print("A B / C",round((A*B)/C,3))
+
+
+        #P(..) pela rede bayes
+        ie=gum.LazyPropagation(bayesianNetwork)
+
+        ie.setEvidence({'Child':1,'Karts':0})
+        ie.makeInference()
+        A = ie.posterior('Adults')[1]
+        print("A -> ",round(A,3))
+    else:
+        print("Não tenho dados suficientes para dar resposta.")
     
-    #Realização da probabilidade pretendida com a questão
-    try:
-        print("A probabilidade é",round(pACnotK/pCnotK,2))
-    except ZeroDivisionError:
-        print("Não encontrei zonas no qual haja uma criança e não haja carrinho")
     pass
