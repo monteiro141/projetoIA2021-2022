@@ -49,12 +49,6 @@ for row in data:
     key, *values = row   
     dictLoja[key] = {key: value for key, value in zip(header, values)}
 
-#Coloca os valores de adultos, cariinhos,crianças e funcionários a 0 no inicio da execução do programa
-for i in dictLoja:
-    dictLoja[i]['adultos'] = 0
-    dictLoja[i]['carrinhos'] = 0
-    dictLoja[i]['criancas'] = 0
-    dictLoja[i]['funcionarios'] = 0
 
 '''
 Lê do raparigas_rapazes.csv a lista de nomes do sexo feminino e masculino. Guarda-se os nomes num array e o correspondente genero num array
@@ -88,7 +82,7 @@ nomes_features = features(nomes)
 genero_features = genero
 
 #Criação dos conjuntos de treino para criarmos a árvore de decisão
-nomes_features_treino, nomes_features_teste, genero_features_treino, genero_features_teste = train_test_split(nomes_features, genero_features, test_size=0.05, random_state=42)
+nomes_features_treino, nomes_features_teste, genero_features_treino, genero_features_teste = train_test_split(nomes_features, genero_features, test_size=0.001, random_state=42)
 
 treinador_Nomes = DictVectorizer()
 
@@ -108,7 +102,8 @@ Caso seja e seja diferente da que observou anteriormente irá guardá-lo no arra
 Caso seja do sexo masculino, não irá alterar o array
 '''
 def viewGender(objeto):
-    transform_Nomes=treinador_Nomes.transform(features([objeto]))
+    nome = objeto.split('_')[1]
+    transform_Nomes=treinador_Nomes.transform(features([nome]))
     transform_Array = transform_Nomes.toarray()
     previsao = arvore_Decisao.predict(transform_Array)
     if int(previsao[0]) == 0 and mulher[1]!=objeto:
@@ -238,7 +233,7 @@ def work(posicao, bateria, objetos):
         for i in objetos:
             #Caso encontre adultos, crianças e funcionários irá ver o seu respetivo género 
             if 'adulto' in i or 'criança' in i or 'funcionário' in i:        
-                viewGender(i.split('_')[1])
+                viewGender(i)
             #Caso identifique uma zona, irá ver se já a conhece, caso não conheça irá guardar a identificação da zona
             if 'zona' in i:
                 checkZone(i.split('_')[1], posicao)
@@ -248,17 +243,7 @@ def work(posicao, bateria, objetos):
             #Irá adicionar os adultos,crianças, funcionários e carrinhos que ainda não passaram pelo robô.
             #E irá incrementar o número de cada um na sua respetiva zona
             if ('adulto' in i or 'funcionário' in i or 'carrinho' in i or 'criança' in i) and i not in Actual_Adults_Karts_Employees:
-                Actual_Adults_Karts_Employees.append(i)
-                currentZone = viewZone(posicao)
-                if 'adulto' in i:
-                    dictLoja[currentZone]['adultos'] += 1
-                if 'funcionário' in i:
-                    dictLoja[currentZone]['funcionarios'] += 1
-                if 'carrinho' in i:
-                    dictLoja[currentZone]['carrinhos'] += 1
-                if 'criança' in i:
-                    dictLoja[currentZone]['criancas'] += 1
-
+                Actual_Adults_Karts_Employees.append(i)                
 
             objeto_anterior.append(i)
         posicao_anterior[0]=posicao[0]
@@ -308,7 +293,7 @@ def resp1():
     if mulher[0] == 'null':
         print("Ainda não passei por pelo menos duas mulheres, logo não existe penúltima pessoa do sexo feminino")
     else:
-        print("A penúltima pessoa do sexo feminino vista foi a", mulher[0]+".")
+        print("A penúltima pessoa do sexo feminino vista foi a", mulher[0].split('_')[1]+".")
     pass
 
 def resp2():
