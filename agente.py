@@ -479,7 +479,7 @@ def resp7():
 
         ie.setEvidence({})
         ie.makeInference()
-        print ("A probabilidade é ",round(ie.posterior('Child')[1],3))
+        print ("A probabilidade é " + str(round(ie.posterior('Child')[1],3)) + ".")
     else:
         print("Não tenho dados suficientes para dar resposta.")
     pass
@@ -524,32 +524,13 @@ def resp8():
         bayesianNetwork.cpt(Child)[{'Adults': 0,'Karts': 1}]=[0.9, 0.1]
         bayesianNetwork.cpt(Child)[{'Adults': 0,'Karts': 0}]=[0.95 , 0.05]
 
-        #P(A| C /\ -K) - pelas formulas
-        ie=gum.LazyPropagation(bayesianNetwork)
-
-        ie.setEvidence({'Adults':1,'Karts':0})
-        ie.makeInference()
-        A = ie.posterior('Child')[1]
-
-        ie=gum.LazyPropagation(bayesianNetwork)
-        ie.setEvidence({'Karts':0})
-        ie.makeInference()
-        B = ie.posterior('Adults')[1]
-
-        ie=gum.LazyPropagation(bayesianNetwork)
-        ie.setEvidence({'Karts':0})
-        ie.makeInference()
-        C = ie.posterior('Child')[1]
-        print("A B / C",round((A*B)/C,3))
-
-
-        #P(..) pela rede bayes
+        # Calculo da P(A| C /\ -K) pela rede bayesiana
         ie=gum.LazyPropagation(bayesianNetwork)
 
         ie.setEvidence({'Child':1,'Karts':0})
         ie.makeInference()
-        A = ie.posterior('Adults')[1]
-        print("A -> ",round(A,3))
+        pobabilidade = ie.posterior('Adults')[1]
+        print("A probabilidade é " +str(round(pobabilidade,3)) + ".")
     else:
         print("Não tenho dados suficientes para dar resposta.")
     
