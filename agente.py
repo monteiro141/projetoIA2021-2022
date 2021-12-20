@@ -314,7 +314,7 @@ def resp1():
 def resp2():
     #Em que tipo de zona estás agora?
     if dictLoja[viewZone(posicao_atual)]['zona'] == "Nao sabe":
-        print("Não sei onde estou.")
+        print("Não sei o tipo, mas estou na secção " + viewZone(posicao_atual)+".")
     else:
         print("Estou na zona " + dictLoja[viewZone(posicao_atual)]['zona']+".")
     pass
@@ -432,7 +432,7 @@ def resp6():
         batteryLoss=w1*battery+w0
         secondsToDrain+=1
         battery=battery-batteryLoss
-    print("Para ficar com metade da bateria que tem agora demora",secondsToDrain)
+    print("Para ficar com metade da bateria que tem agora demoro",secondsToDrain,"segundos")
     pass
 
 def resp7():
