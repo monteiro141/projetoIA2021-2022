@@ -255,7 +255,7 @@ def calcularDistancia2Pontos(ponto1, ponto2):
     return distancia
     
 '''
-Função usada para determinar a distãncia entre o local em que o robô se encontra e o local desejado. Ex: PontoA -> Talho
+Função usada para determinar a distância entre o local em que o robô se encontra e o local desejado. Ex: PontoA -> Talho
 '''
 def conhecerLocaisEDistanciaAteEles(Local):
     conhece=False
@@ -286,7 +286,7 @@ def conhecerLocaisEDistanciaAteEles(Local):
 def resp1():
     #Qual foi a penúltima pessoa do sexo feminino que viste?
     if mulher[0] == 'null':
-        print("Ainda não passei por pelo menos duas mulheres, logo não existe penúltima pessoa do sexo feminino")
+        print("Ainda não passei por pelo menos duas mulheres, logo não existe penúltima pessoa do sexo feminino.")
     else:
         print("A penúltima pessoa do sexo feminino vista foi a", mulher[0].split('_')[1]+".")
     pass
@@ -341,7 +341,7 @@ def resp4():
     # Iremos chamar a função que calcula a distância desde a posição atual até ao talho. 
     conhecerTalho = conhecerLocaisEDistanciaAteEles("talho")
     if conhecerTalho > 0:
-        print("Distância da posição atual ao talho é",conhecerTalho)
+        print("Distância da posição atual ao talho é "+str(conhecerTalho)+".")
     elif conhecerTalho == 0:
         print("Estou no talho.")
     else:
@@ -412,9 +412,9 @@ def resp6():
             batteryLoss=w1*battery+w0
             secondsToDrain+=1
             battery=battery-batteryLoss
-        print("Para ficar com metade da bateria que tem agora demoro",secondsToDrain,"segundos")
+        print("Para ficar com metade da bateria que tenho agora demoro",secondsToDrain,"segundos")
     except ZeroDivisionError:
-        print("Não tenho dados sufucuentes para dar a resposta.")
+        print("Não tenho dados suficientes para dar a resposta.")
     pass
 
 def resp7():
