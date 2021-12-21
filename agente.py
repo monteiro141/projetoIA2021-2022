@@ -394,25 +394,27 @@ def resp6():
     xi = 0
     yi = 0
     xi2 = 0
+    try:
+        for x, y in BatteryData:
+            xiyi += x*y
+            xi += x
+            yi +=  y
+            xi2 += x**2
 
-    for x,y in BatteryData:
-        xiyi += x*y
-        xi += x
-        yi +=  y
-        xi2 += x**2
-
-    w1 = ((N*xiyi) - xi * yi) / ((N*xi2) - xi**2)
-    w0 = (yi - w1*xi)/N
-   
-    halfBattery=currentBattery/2
-    battery=currentBattery
-    secondsToDrain=0
-    # Até ficar com metade da bateria, os segundos serão incrementados e a bateria irá perdendo de acordo com a perda de bateria prevista pela reta.
-    while battery > halfBattery:
-        batteryLoss=w1*battery+w0
-        secondsToDrain+=1
-        battery=battery-batteryLoss
-    print("Para ficar com metade da bateria que tem agora demoro",secondsToDrain,"segundos")
+        w1 = ((N*xiyi) - xi * yi) / ((N*xi2) - xi**2)
+        w0 = (yi - w1*xi)/N
+    
+        halfBattery=currentBattery/2
+        battery=currentBattery
+        secondsToDrain=0
+        # Até ficar com metade da bateria, os segundos serão incrementados e a bateria irá perdendo de acordo com a perda de bateria prevista pela reta.
+        while battery > halfBattery:
+            batteryLoss=w1*battery+w0
+            secondsToDrain+=1
+            battery=battery-batteryLoss
+        print("Para ficar com metade da bateria que tem agora demoro",secondsToDrain,"segundos")
+    except ZeroDivisionError:
+        print("Não tenho dados sufucuentes para dar a resposta.")
     pass
 
 def resp7():
