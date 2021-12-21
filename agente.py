@@ -81,18 +81,15 @@ features = np.vectorize(features)
 nomes_features = features(nomes)
 genero_features = genero
 
-#Criação dos conjuntos de treino para criarmos a árvore de decisão
-nomes_features_treino, nomes_features_teste, genero_features_treino, genero_features_teste = train_test_split(nomes_features, genero_features, test_size=0.001, random_state=42)
-
 treinador_Nomes = DictVectorizer()
 
-treinador_Nomes.fit_transform(nomes_features_treino)
+treinador_Nomes.fit_transform(nomes_features)
 
 #Torna as features dos nomes em vetores de números para poder ser usado na árvore de decisão
-my_xfeatures =treinador_Nomes.transform(nomes_features_treino)
+my_xfeatures =treinador_Nomes.transform(nomes_features)
 #criação da árvore de decisão
 arvore_Decisao = DecisionTreeClassifier()
-arvore_Decisao.fit(my_xfeatures, genero_features_treino)
+arvore_Decisao.fit(my_xfeatures, genero_features)
 
 
 '''
