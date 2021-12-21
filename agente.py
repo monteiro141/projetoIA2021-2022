@@ -222,9 +222,7 @@ def work(posicao, bateria, objetos):
     posicao_anterior_distance[0]=posicao_atual_distance[0]
     posicao_anterior_distance[1]=posicao_atual_distance[1]
 
-    
-    
-    #
+     
     if posicao_anterior!=posicao and objeto_anterior!=objetos:
         objeto_anterior.clear()
         for i in objetos:
